@@ -2,7 +2,8 @@
 layout: post
 title:  Introducing bits
 categories: bitcoin python cli
-author: Jason Traub
+published: 2023-05-23
+author: jtraub91
 ---
 
 Introducing [bits](https://github.com/jtraub91/bits), a free and open source cli tool and pure Python library developed for Bitcoin.

@@ -2,6 +2,8 @@
 layout: post
 title:  "How to sign a Bitcoin transaction"
 categories: bitcoin bitcoind bitcoin-cli openssl python python-ecdsa
+published: 2023-01-28
+author: jtraub91
 ---
 
 _Edited: 02/23/2023_
