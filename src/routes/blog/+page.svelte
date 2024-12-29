@@ -1,5 +1,11 @@
 <script>
-  import Blog from '$lib/components/Blog.svelte';
+  import BlogPreview from '$lib/components/BlogPreview.svelte';
+
+  export let data;
 </script>
 
-<Blog />
+<div>
+  {#each data as post}
+    <BlogPreview {...post} />
+  {/each}
+</div>

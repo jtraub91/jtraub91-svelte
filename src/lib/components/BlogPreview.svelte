@@ -3,18 +3,20 @@
 </script>
 
 <style>
-  h1 {
-    font-family: cursive;
+  h2 {
+    font-family: Georgia, 'Times New Roman', Times, serif;
   }
 </style>
 
 <div class="bg-white  border rounded-lg">
-  <h1>
+  <h2>
     {title}
-  </h1>
+  </h2>
   <div>by {author}</div>
   <div>
     {new Date(date).toLocaleDateString()}
   </div>
-  <svelte:component this={content} />
+  <div>
+    {content}
+  </div>
 </div>

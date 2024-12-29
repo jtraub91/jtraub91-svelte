@@ -12,7 +12,7 @@
       links
     </span>
   </a>
-  <a href="mailto:jtraub91@gmail.com" class="ml-auto mr-4 mt-auto mb-0 font-mono text-blue-500 hover:text-green-400 text-4xl">
+  <a href="/contact" class="ml-auto mr-4 mt-auto mb-0 font-mono text-blue-500 hover:text-green-400 text-4xl">
     contact
   </a>
 </header>
