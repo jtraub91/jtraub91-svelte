@@ -25,14 +25,36 @@
     text-align: center;
     font-size: 1.2rem;
   }
+  .blog-preview {
+    display: flex;
+    margin: 3.5rem auto;
+    width: 75%;
+    background: white;
+    border: 0.25rem solid pink;
+    border-radius: 0.5rem;
+  }
+  .blog-preview a {
+    width: 100%;
+    height: 100%;
+    flex-grow: 1;
+  }
+  .blog-date {
+    margin: 0.25rem;
+    padding: 0.25rem;
+    display: flex;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: rgb(107 114 128 / var(--tw-text-opacity, 1)) /* #6b7280 */;
+    --tw-text-opacity: 1;
+  } 
 </style>
 
-<div class="bg-white border-2 border-pink-300 hover:border-indigo-700 rounded-lg m-10 w-3/4 h-48 flex flex-col">
-  <a href={`/blog/${slug}`} class="w-full h-full grow">
+<div class="blog-preview">
+  <a href={`/blog/${slug}`}>
     <h2>
       {title}
     </h2>
-    <div class="flex flex-row justify-between text-xs text-gray-500">
+    <div class="blog-date">
       <div class="m-auto">
         {formattedDate}
       </div>

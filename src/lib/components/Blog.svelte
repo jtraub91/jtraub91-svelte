@@ -21,13 +21,42 @@
 <style>
   h1 {
     font-family: Georgia, 'Times New Roman', Times, serif;
-    font-size: 1.5rem;
+    font-size: 2rem;
+  }
+  article {
+    margin: 1rem auto;
+    max-width: 32rem;
+  }
+  :global(article pre) {
+    background-color: #f5f5f5;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    overflow-x: auto;
+  }
+
+  :global(article code) {
+    font-family: 'Courier New', Courier, monospace;
+    color: #333;
   }
   :global(article h2) {
+    font-size: 1.75rem;
+  }
+  :global(article h3) {
+    font-size: 1.5rem;
+  }
+  :global(article h4) {
     font-size: 1.25rem;
   }
   :global(article p) {
-    margin: 0.5rem;
+    margin: 1rem 0;
+    padding: 0.5rem;
+    background-color: white;
+    border-radius: 0.5rem;
+  }
+  :global(article p a), :global(article ol li a) {
+    color: dodgerblue;
+    text-decoration: underline;
   }
 </style>
 
@@ -38,7 +67,7 @@
   <div class="text-center text-sm text-gray-500">
     {formattedDate}
   </div>
-  <article class="bg-white my-4 p-2">
+  <article>
     {@html content}
   </article>
 </div>

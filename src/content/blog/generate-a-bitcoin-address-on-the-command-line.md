@@ -3,8 +3,8 @@ layout: post
 title:  "Generate a Bitcoin address on the command line"
 published: 2023-01-21
 author: jtraub91
+edited: 2023-01-23
 ---
-Edited: 01/23/2023
 
 ## Introduction
 

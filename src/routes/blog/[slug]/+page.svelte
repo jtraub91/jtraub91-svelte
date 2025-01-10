@@ -4,6 +4,6 @@
 	export let data;
 </script>
 
-<div class="w-screen flex flex-col">
+<div class="flex flex-col">
 	<Blog {...data} />
 </div>

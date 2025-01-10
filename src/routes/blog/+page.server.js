@@ -24,5 +24,6 @@ export async function load({ params }){
       slug,
     })
   }
+  posts.sort((a, b) => b.date.getTime() - a.date.getTime())
   return {posts};
 }

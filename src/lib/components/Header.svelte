@@ -2,6 +2,12 @@
   import {page} from '$app/stores';
 </script>
 
+<style>
+  a {
+    font-size: 1.5rem;
+  }
+</style>
+
 
 <header class="w-full flex flex-row">
   <div class="top-0 left-0 h-20 w-20">
@@ -16,8 +22,5 @@
     <span class="mb-0 mt-auto mx-auto">
       links
     </span>
-  </a>
-  <a href="/contact" class="mx-4 mt-auto mb-0 font-mono text-lg text-blue-500 hover:text-green-400 {$page.url.pathname === '/contact' ? 'underline' : ''}">
-    contact
   </a>
 </header>
