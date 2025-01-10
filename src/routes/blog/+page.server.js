@@ -1,29 +1,28 @@
 import fs from 'fs';
 import path from 'path';
-
+import matter from 'gray-matter';
 
 export async function load({ params }){
-  const blogDir = path.resolve('src/routes/blog');
+  const blogContentPath = 'src/content/blog/';
+  const blogDir = path.resolve(blogContentPath);
   const files = fs.readdirSync(blogDir).filter(file => file.endsWith('.md'));
 
   let posts = [];
   for (let i = 0; i < files.length; i++){
-    let post = await import(`./${files[i]}`);
-    let content = post.default.keys;
-    let title = post.metadata.title;
-    let date = post.metadata.published;
-    let author = post.metadata.author; 
+    let fileText = fs.readFileSync(blogContentPath + files[i]);
+    let parsedText = matter(fileText);
+
+    let slug = files[i].replace('.md', '');
+    let title = parsedText.data.title;
+    let date = parsedText.data.published;
+    let author = parsedText.data.author; 
 
     posts.push({
-      content,
       title,
       date,
       author,
+      slug,
     })
   }
   return {posts};
 }
-
-
-
-
