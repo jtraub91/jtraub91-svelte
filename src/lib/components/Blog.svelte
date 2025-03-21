@@ -22,10 +22,18 @@
   h1 {
     font-family: Georgia, 'Times New Roman', Times, serif;
     font-size: 2rem;
+    margin: 1rem auto 0.5rem auto;
   }
   article {
     margin: 1rem auto;
-    max-width: 32rem;
+    padding: 0 1rem;
+    width: 100%;
+    max-width: 48rem;
+  }
+  @media (max-width: 960px){
+    /* article {
+      width: 32rem;
+    } */
   }
   :global(article pre) {
     background-color: #f5f5f5;
@@ -34,15 +42,20 @@
     border-radius: 5px;
     overflow-x: auto;
   }
-
+  :global(article ul) {
+    margin: 1rem 2rem;
+    list-style-type: circle;
+  }
   :global(article code) {
     font-family: 'Courier New', Courier, monospace;
     color: #333;
   }
   :global(article h2) {
+    margin: 1rem 0;
     font-size: 1.75rem;
   }
   :global(article h3) {
+    margin: 1rem 0;
     font-size: 1.5rem;
   }
   :global(article h4) {
@@ -60,7 +73,7 @@
   }
 </style>
 
-<div class="border rounded-lg w-3/4 mx-auto my-4">
+
   <h1 class="text-center">
     {title}
   </h1>
@@ -70,4 +83,3 @@
   <article>
     {@html content}
   </article>
-</div>

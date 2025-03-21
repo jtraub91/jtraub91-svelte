@@ -4,16 +4,16 @@
   }
   li {
     padding: 0.5rem;
+    max-width: 320px;
     height: 2.5rem;
     margin: 2.5rem auto;
     border: 2px solid indigo;
     border-radius: 0.25rem;
     background-color: white;
-    transition: background 0.3s linear, border 0.3s linear;
+    transition: border 0.2s linear;
   }
   li:hover {
     border: 2px solid yellow;
-    backdrop-filter: blur(0.25rem);
   }
   li a {
     display: flex;
