@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="../favicon.jpg" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		
+		<link href="../_app/immutable/assets/0.DPidJByt.css" rel="stylesheet">
+		<link href="../_app/immutable/assets/4.cuQNAo3a.css" rel="stylesheet">
+		<link rel="modulepreload" href="../_app/immutable/entry/start.KJh6PgXi.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/entry.ErmU7m1_.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/runtime.CoMFCokD.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/index-client.uip5C0tD.js">
+		<link rel="modulepreload" href="../_app/immutable/entry/app.D4pyBmeP.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/render.BNdOsU5-.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/disclose-version.CdsaJyap.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/props.0LGAYUSe.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/store.BTxSyo9A.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/0.NBz-YxCm.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/legacy.CTsEH1qb.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/lifecycle.BFAvy8Wq.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/4.DZS_Dq8I.js">
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents"><!--[--><!--[--><!----><div class="flex flex-col min-w-[420px]"><header class="flex flex-row"><div class="top-0 left-0 h-20 w-20 min-h-20 min-w-20"><a href="/" id="yoshi-github-jtraub91" class="svelte-dpys7o"><img src="/images/yoshi-github-jtraub91.jpg" alt="yoshi-github-jtraub91"></a></div> <a href="/blog" class="nav-link mx-2 mt-auto mb-0 font-mono text-lg text-[dodgerblue] hover:text-[indigo]  svelte-dpys7o">blog</a> <a href="/links" class="nav-link mx-2 mt-auto mb-0 font-mono text-lg text-[dodgerblue] hover:text-[indigo]  svelte-dpys7o"><span class="mb-0 mt-auto mx-auto">links</span></a></header><!----> <div class="flex flex-col"><!----><div class="flex flex-col"><h1 class="text-center svelte-1azcsk6">Generate a Bitcoin address on the command line</h1> <div class="text-center text-sm text-gray-500">January 5, 2023</div> <article class="svelte-1azcsk6"><!----><h2>Introduction</h2>
+<p>A bitcoin address is all you need in order for someone to send you bitcoins, and it&#39;s quite easy to generate one with only a few standard CLI commands.</p>
+<p>To start, we can generate the secret key, in <a href="https://en.wikipedia.org/wiki/Privacy-Enhanced_Mail">pem</a> format, with <code>openssl</code></p>
+<pre><code class="language-bash">openssl ecparam -name secp256k1 -genkey -noout
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">-----BEGIN EC PRIVATE KEY-----
+MHQCAQEEIKoisZQEuFRDka96F+ZS8BK2vVAKEfBhNwADOlWORWcKoAcGBSuBBAAK
+oUQDQgAEh6n+yJEkWqype8n+QdJUGRYP32pwgkbXoV+XpPzk1AXlaPN1L09BpdDj
+GbZjVCXADjE3T1jM8g1FSqrp9zcA8Q==
+-----END EC PRIVATE KEY-----
+</code></pre>
+<p>This randomly generated key should be <strong>saved securely</strong> and kept <strong>secret</strong>, as it gives access to spend any bitcoins associated with it&#39;s public key.</p>
+<p>Save this key to a file, e.g. <code>secret.pem</code>.</p>
+<p>From this, we can retrieve the public key, again leveraging <code>openssl</code></p>
+<pre><code class="language-bash">openssl ec -pubout -in secret.pem
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">-----BEGIN PUBLIC KEY-----
+MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEh6n+yJEkWqype8n+QdJUGRYP32pwgkbX
+oV+XpPzk1AXlaPN1L09BpdDjGbZjVCXADjE3T1jM8g1FSqrp9zcA8Q==
+-----END PUBLIC KEY-----
+</code></pre>
+<p>(Hint: Use <code>-conv_form compressed</code> to output a compressed public key)</p>
+<p>The above command reads in the private key we saved to <code>secret.pem</code>, and outputs the public key it corresponds to, once again in pem format.</p>
+<p>Save this public key to a file, e.g. <code>public.pem</code></p>
+<h3>Technical note</h3>
+<p>A Bitcoin private key is nothing but a random number defining a point on Bitcoin&#39;s <a href="https://www.secg.org/sec2-v2.pdf">SECP256k1</a> elliptic curve. The public key shown above is simply a pem encoding of that point&#39;s (x, y) coordinates.</p>
+<p>Elliptic curve cryptography leverages the fact that, while generating the public key from the private key is trivial, as seen above, it is unfeasible, with currently known computational capabilities, to calculate the private key from knowledge of the public key.</p>
+<p>Bitcoin leverages elliptic curve cryptography, allowing for sending bitcoin to a public key, which can be freely and publicly shared, while only allowing spend access to those with knowledge of the private key.</p>
+<p>Moving on, we can retrieve the hexadecimal representation of this key with the following</p>
+<pre><code class="language-bash">openssl ec -pubin -in public.pem -text -noout
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">pub: 
+    04:87:a9:fe:c8:91:24:5a:ac:a9:7b:c9:fe:41:d2:
+    54:19:16:0f:df:6a:70:82:46:d7:a1:5f:97:a4:fc:
+    e4:d4:05:e5:68:f3:75:2f:4f:41:a5:d0:e3:19:b6:
+    63:54:25:c0:0e:31:37:4f:58:cc:f2:0d:45:4a:aa:
+    e9:f7:37:00:f1
+ASN1 OID: secp256k1
+</code></pre>
+<p>(Hint: <code>openssl asn1parse</code> can be used to retrieve similar info)</p>
+<p>The <code>04</code> starting byte denotes this is an uncompressed public key. The remaining bytes represent a 32 byte big endian number representing the x coordinate, followed by a 32 byte big endian number representing the y coordinate.</p>
+<p>(Hint: Compressed public keys will start with either a <code>02</code> or <code>03</code> byte, signifying wether the y-coordinate is positive or negative, respectively, and only contain the x-coordinate.)</p>
+<p>Let&#39;s trim this response to a concise string, by piping it into some shell commands (<code>grep</code> and <code>tr</code>), and using <code>echo</code> to print the result.</p>
+<pre><code class="language-bash">echo $(openssl ec -pubin -in public.pem -text -noout | grep -E &quot;[a-f0-9][a-f0-9]:&quot; | tr -d &#39; &#39; | tr -d &#39;:&#39; | tr -d &#39;\n&#39;)
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">0487a9fec891245aaca97bc9fe41d25419160fdf6a708246d7a15f97a4fce4d405e568f3752f4f41a5d0e319b6635425c00e31374f58ccf20d454aaae9f73700f1
+</code></pre>
+<p>All the above command is doing is removing the whitespace and <code>:</code> characters for the pubkey and concatenating the result.</p>
+<p>It is possible to use this pubkey, directly, to receive bitcoins, by using a standard pay-to-pubkey (P2PK) transaction. In fact, this was used by Satoshi in the first ever Bitcoin transaction. However, it is now uncommon to do so.</p>
+<p>An improvement to P2PK that Satoshi offered was pay-to-pubkey-hash (P2PKH) transactions and base58check encoding.</p>
+<p>To calculate a base58-encoded Bitcoin P2PKH address, we first hash the pubkey with sha256, followed by ripemd160.</p>
+<pre><code class="language-bash">echo 0487a9fec891245aaca97bc9fe41d25419160fdf6a708246d7a15f97a4fce4d405e568f3752f4f41a5d0e319b6635425c00e31374f58ccf20d454aaae9f73700f1 | xxd -r -p | openssl sha256 | xxd -r -p | openssl ripemd160 
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">750cdc483aef5b05f8465814b4dcc4ab36060880
+</code></pre>
+<p>Hashing the pubkey as such reduces the data to a 20 byte string. This helps to reduce transaction size and also offers a some extra security by not revealing the public key directly on the blockchain, until time of spenditure.</p>
+<p>Note: The <code>xxd</code> commands above are simply used to translate the plaintext hex string to binary, to be used as input to the subsequent command.</p>
+<p>We then prepend a zero byte, signifying that this should be used for a P2PKH transaction on Bitcoin mainnet, i.e.</p>
+<pre><code class="language-bash">00750cdc483aef5b05f8465814b4dcc4ab36060880
+</code></pre>
+<p>Finally, we encode this data with <a href="https://en.bitcoin.it/wiki/Base58Check_encoding">base58check</a>. The &quot;check&quot; in &quot;base58check&quot; stands for the checksum that is appended for error detection purposes. We calculate that as follows. First, we take the double sha256 hash of the data.</p>
+<pre><code class="language-bash">echo 00750cdc483aef5b05f8465814b4dcc4ab36060880 | xxd -r -p | openssl sha256 | xxd -r -p | openssl sha256
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">d74bee98fffee02c7f7036a14789fd4bcc69d84f7644f732890d5ef998119b52
+</code></pre>
+<p>Then, we take only the first 4 bytes, i.e.</p>
+<pre><code class="language-bash">d74bee98
+</code></pre>
+<p>And append it to the original data, i.e.</p>
+<pre><code class="language-bash">00750cdc483aef5b05f8465814b4dcc4ab36060880d74bee98
+</code></pre>
+<p>This result, finally, is encoded with base58.</p>
+<h3>Historical background</h3>
+<p>Satoshi included base58, a subset of <a href="https://en.wikipedia.org/wiki/Base64">base64</a>, in the <a href="https://github.com/bitcoin/bitcoin/blob/v0.1.5/base58.h#L7-L12">original Bitcoin source code</a>, for which the rationale of using such can be seen as follows.</p>
+<pre><code class="language-c">// Why base-58 instead of standard base-64 encoding?
+// - Don&#39;t want 0OIl characters that look the same in some fonts and
+//      could be used to create visually identical looking account numbers.
+// - A string with non-alphanumeric characters is not as easily accepted as an account number.
+// - E-mail usually won&#39;t line-break if there&#39;s no punctuation to break at.
+// - Doubleclicking selects the whole number as one word if it&#39;s all alphanumeric.
+</code></pre>
+<h3>Base58 algorithm</h3>
+<p>The algorithm for base58 is relatively straightforward. We first remove any leading zero bytes. Then, the remaining data is interpreted as a big endian number and integer division by 58 is calculated repeatedly until there is no remainder. The value of the remainder at each iteration is mapped to a character in the bitcoin alphabet below, and the result is accumulated by prepending the character to the final base58-encoded bytestring at each iteration. Finally, any and each leading zero byte removed previously are translated to the character <code>1</code> and prepended to the final result.</p>
+<p>The following python code performs this process.</p>
+<pre><code class="language-python">BITCOIN_ALPHABET = b&quot;123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz&quot;
+
+def base58encode(data):
+    data = bytes.fromhex(data)
+    origlen = len(data)
+    data = data.lstrip(b&quot;\x00&quot;)
+    newlen = len(data)
+    zeros = origlen - newlen
+
+    encoded = b&quot;&quot;
+    integer = int.from_bytes(data, &quot;big&quot;)
+    while integer:
+        integer, idx = divmod(integer, 58)
+        encoded = BITCOIN_ALPHABET[idx : idx + 1] + encoded
+    return (BITCOIN_ALPHABET[0:1] * zeros + encoded).decode(&quot;ascii&quot;)
+</code></pre>
+<p>Alternatively, we can use <a href="https://github.com/keis/base58">base58</a> which can be installed using <code>pip</code>.</p>
+<pre><code class="language-bash">pip3 install base58
+</code></pre>
+<p>Once installed we can leverage it to retrieve our end result, a Bitcoin P2PKH address for mainnet.</p>
+<pre><code class="language-bash">echo $(echo 00750cdc483aef5b05f8465814b4dcc4ab36060880d74bee98 | xxd -r -p | base58)
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">1BfuU1LS3BDiRHtv3Tb8weAcFpFiT26YDm
+</code></pre>
+<p>Now this address can be used to send bitcoins to!</p>
+<p>I have just sent 10,000 satoshis (0.00010000 BTC) as can be seen in the block explorer <a href="https://blockstream.info/address/1BfuU1LS3BDiRHtv3Tb8weAcFpFiT26YDm">here</a>.</p>
+<p>It should now be trivial for anyone to take these funds (or any future funds sent to this address) with the private key data shown above, for which I will leave as an exercise for the reader 🤑. I wonder how long it will take for these funds to move... 🤔 😅</p>
+<p>Until next time! ✌️ 😎 ❤️</p>
+<!----></article><!----></div><!----><!----></div> <footer class="bottom-0 w-full flex flex-row text-gray-500 text-xs"><span class="m-auto p-2">© 2025 Jason Traub</span></footer><!----></div><!----><!--]--> <!--[!--><!--]--><!--]-->
+			
+			<script>
+				{
+					__sveltekit_1w70g9p = {
+						base: new URL("..", location).pathname.slice(0, -1)
+					};
+
+					const element = document.currentScript.parentElement;
+
+					Promise.all([
+						import("../_app/immutable/entry/start.KJh6PgXi.js"),
+						import("../_app/immutable/entry/app.D4pyBmeP.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element, {
+							node_ids: [0, 4],
+							data: [null,{"type":"data","data":{content:"\u003Ch2>Introduction\u003C/h2>\n\u003Cp>A bitcoin address is all you need in order for someone to send you bitcoins, and it&#39;s quite easy to generate one with only a few standard CLI commands.\u003C/p>\n\u003Cp>To start, we can generate the secret key, in \u003Ca href=\"https://en.wikipedia.org/wiki/Privacy-Enhanced_Mail\">pem\u003C/a> format, with \u003Ccode>openssl\u003C/code>\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">openssl ecparam -name secp256k1 -genkey -noout\n\u003C/code>\u003C/pre>\n\u003Cp>Output:\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">-----BEGIN EC PRIVATE KEY-----\nMHQCAQEEIKoisZQEuFRDka96F+ZS8BK2vVAKEfBhNwADOlWORWcKoAcGBSuBBAAK\noUQDQgAEh6n+yJEkWqype8n+QdJUGRYP32pwgkbXoV+XpPzk1AXlaPN1L09BpdDj\nGbZjVCXADjE3T1jM8g1FSqrp9zcA8Q==\n-----END EC PRIVATE KEY-----\n\u003C/code>\u003C/pre>\n\u003Cp>This randomly generated key should be \u003Cstrong>saved securely\u003C/strong> and kept \u003Cstrong>secret\u003C/strong>, as it gives access to spend any bitcoins associated with it&#39;s public key.\u003C/p>\n\u003Cp>Save this key to a file, e.g. \u003Ccode>secret.pem\u003C/code>.\u003C/p>\n\u003Cp>From this, we can retrieve the public key, again leveraging \u003Ccode>openssl\u003C/code>\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">openssl ec -pubout -in secret.pem\n\u003C/code>\u003C/pre>\n\u003Cp>Output:\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">-----BEGIN PUBLIC KEY-----\nMFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEh6n+yJEkWqype8n+QdJUGRYP32pwgkbX\noV+XpPzk1AXlaPN1L09BpdDjGbZjVCXADjE3T1jM8g1FSqrp9zcA8Q==\n-----END PUBLIC KEY-----\n\u003C/code>\u003C/pre>\n\u003Cp>(Hint: Use \u003Ccode>-conv_form compressed\u003C/code> to output a compressed public key)\u003C/p>\n\u003Cp>The above command reads in the private key we saved to \u003Ccode>secret.pem\u003C/code>, and outputs the public key it corresponds to, once again in pem format.\u003C/p>\n\u003Cp>Save this public key to a file, e.g. \u003Ccode>public.pem\u003C/code>\u003C/p>\n\u003Ch3>Technical note\u003C/h3>\n\u003Cp>A Bitcoin private key is nothing but a random number defining a point on Bitcoin&#39;s \u003Ca href=\"https://www.secg.org/sec2-v2.pdf\">SECP256k1\u003C/a> elliptic curve. The public key shown above is simply a pem encoding of that point&#39;s (x, y) coordinates.\u003C/p>\n\u003Cp>Elliptic curve cryptography leverages the fact that, while generating the public key from the private key is trivial, as seen above, it is unfeasible, with currently known computational capabilities, to calculate the private key from knowledge of the public key.\u003C/p>\n\u003Cp>Bitcoin leverages elliptic curve cryptography, allowing for sending bitcoin to a public key, which can be freely and publicly shared, while only allowing spend access to those with knowledge of the private key.\u003C/p>\n\u003Cp>Moving on, we can retrieve the hexadecimal representation of this key with the following\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">openssl ec -pubin -in public.pem -text -noout\n\u003C/code>\u003C/pre>\n\u003Cp>Output:\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">pub: \n    04:87:a9:fe:c8:91:24:5a:ac:a9:7b:c9:fe:41:d2:\n    54:19:16:0f:df:6a:70:82:46:d7:a1:5f:97:a4:fc:\n    e4:d4:05:e5:68:f3:75:2f:4f:41:a5:d0:e3:19:b6:\n    63:54:25:c0:0e:31:37:4f:58:cc:f2:0d:45:4a:aa:\n    e9:f7:37:00:f1\nASN1 OID: secp256k1\n\u003C/code>\u003C/pre>\n\u003Cp>(Hint: \u003Ccode>openssl asn1parse\u003C/code> can be used to retrieve similar info)\u003C/p>\n\u003Cp>The \u003Ccode>04\u003C/code> starting byte denotes this is an uncompressed public key. The remaining bytes represent a 32 byte big endian number representing the x coordinate, followed by a 32 byte big endian number representing the y coordinate.\u003C/p>\n\u003Cp>(Hint: Compressed public keys will start with either a \u003Ccode>02\u003C/code> or \u003Ccode>03\u003C/code> byte, signifying wether the y-coordinate is positive or negative, respectively, and only contain the x-coordinate.)\u003C/p>\n\u003Cp>Let&#39;s trim this response to a concise string, by piping it into some shell commands (\u003Ccode>grep\u003C/code> and \u003Ccode>tr\u003C/code>), and using \u003Ccode>echo\u003C/code> to print the result.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">echo $(openssl ec -pubin -in public.pem -text -noout | grep -E &quot;[a-f0-9][a-f0-9]:&quot; | tr -d &#39; &#39; | tr -d &#39;:&#39; | tr -d &#39;\\n&#39;)\n\u003C/code>\u003C/pre>\n\u003Cp>Output:\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">0487a9fec891245aaca97bc9fe41d25419160fdf6a708246d7a15f97a4fce4d405e568f3752f4f41a5d0e319b6635425c00e31374f58ccf20d454aaae9f73700f1\n\u003C/code>\u003C/pre>\n\u003Cp>All the above command is doing is removing the whitespace and \u003Ccode>:\u003C/code> characters for the pubkey and concatenating the result.\u003C/p>\n\u003Cp>It is possible to use this pubkey, directly, to receive bitcoins, by using a standard pay-to-pubkey (P2PK) transaction. In fact, this was used by Satoshi in the first ever Bitcoin transaction. However, it is now uncommon to do so.\u003C/p>\n\u003Cp>An improvement to P2PK that Satoshi offered was pay-to-pubkey-hash (P2PKH) transactions and base58check encoding.\u003C/p>\n\u003Cp>To calculate a base58-encoded Bitcoin P2PKH address, we first hash the pubkey with sha256, followed by ripemd160.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">echo 0487a9fec891245aaca97bc9fe41d25419160fdf6a708246d7a15f97a4fce4d405e568f3752f4f41a5d0e319b6635425c00e31374f58ccf20d454aaae9f73700f1 | xxd -r -p | openssl sha256 | xxd -r -p | openssl ripemd160 \n\u003C/code>\u003C/pre>\n\u003Cp>Output:\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">750cdc483aef5b05f8465814b4dcc4ab36060880\n\u003C/code>\u003C/pre>\n\u003Cp>Hashing the pubkey as such reduces the data to a 20 byte string. This helps to reduce transaction size and also offers a some extra security by not revealing the public key directly on the blockchain, until time of spenditure.\u003C/p>\n\u003Cp>Note: The \u003Ccode>xxd\u003C/code> commands above are simply used to translate the plaintext hex string to binary, to be used as input to the subsequent command.\u003C/p>\n\u003Cp>We then prepend a zero byte, signifying that this should be used for a P2PKH transaction on Bitcoin mainnet, i.e.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">00750cdc483aef5b05f8465814b4dcc4ab36060880\n\u003C/code>\u003C/pre>\n\u003Cp>Finally, we encode this data with \u003Ca href=\"https://en.bitcoin.it/wiki/Base58Check_encoding\">base58check\u003C/a>. The &quot;check&quot; in &quot;base58check&quot; stands for the checksum that is appended for error detection purposes. We calculate that as follows. First, we take the double sha256 hash of the data.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">echo 00750cdc483aef5b05f8465814b4dcc4ab36060880 | xxd -r -p | openssl sha256 | xxd -r -p | openssl sha256\n\u003C/code>\u003C/pre>\n\u003Cp>Output:\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">d74bee98fffee02c7f7036a14789fd4bcc69d84f7644f732890d5ef998119b52\n\u003C/code>\u003C/pre>\n\u003Cp>Then, we take only the first 4 bytes, i.e.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">d74bee98\n\u003C/code>\u003C/pre>\n\u003Cp>And append it to the original data, i.e.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">00750cdc483aef5b05f8465814b4dcc4ab36060880d74bee98\n\u003C/code>\u003C/pre>\n\u003Cp>This result, finally, is encoded with base58.\u003C/p>\n\u003Ch3>Historical background\u003C/h3>\n\u003Cp>Satoshi included base58, a subset of \u003Ca href=\"https://en.wikipedia.org/wiki/Base64\">base64\u003C/a>, in the \u003Ca href=\"https://github.com/bitcoin/bitcoin/blob/v0.1.5/base58.h#L7-L12\">original Bitcoin source code\u003C/a>, for which the rationale of using such can be seen as follows.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-c\">// Why base-58 instead of standard base-64 encoding?\n// - Don&#39;t want 0OIl characters that look the same in some fonts and\n//      could be used to create visually identical looking account numbers.\n// - A string with non-alphanumeric characters is not as easily accepted as an account number.\n// - E-mail usually won&#39;t line-break if there&#39;s no punctuation to break at.\n// - Doubleclicking selects the whole number as one word if it&#39;s all alphanumeric.\n\u003C/code>\u003C/pre>\n\u003Ch3>Base58 algorithm\u003C/h3>\n\u003Cp>The algorithm for base58 is relatively straightforward. We first remove any leading zero bytes. Then, the remaining data is interpreted as a big endian number and integer division by 58 is calculated repeatedly until there is no remainder. The value of the remainder at each iteration is mapped to a character in the bitcoin alphabet below, and the result is accumulated by prepending the character to the final base58-encoded bytestring at each iteration. Finally, any and each leading zero byte removed previously are translated to the character \u003Ccode>1\u003C/code> and prepended to the final result.\u003C/p>\n\u003Cp>The following python code performs this process.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-python\">BITCOIN_ALPHABET = b&quot;123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz&quot;\n\ndef base58encode(data):\n    data = bytes.fromhex(data)\n    origlen = len(data)\n    data = data.lstrip(b&quot;\\x00&quot;)\n    newlen = len(data)\n    zeros = origlen - newlen\n\n    encoded = b&quot;&quot;\n    integer = int.from_bytes(data, &quot;big&quot;)\n    while integer:\n        integer, idx = divmod(integer, 58)\n        encoded = BITCOIN_ALPHABET[idx : idx + 1] + encoded\n    return (BITCOIN_ALPHABET[0:1] * zeros + encoded).decode(&quot;ascii&quot;)\n\u003C/code>\u003C/pre>\n\u003Cp>Alternatively, we can use \u003Ca href=\"https://github.com/keis/base58\">base58\u003C/a> which can be installed using \u003Ccode>pip\u003C/code>.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">pip3 install base58\n\u003C/code>\u003C/pre>\n\u003Cp>Once installed we can leverage it to retrieve our end result, a Bitcoin P2PKH address for mainnet.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">echo $(echo 00750cdc483aef5b05f8465814b4dcc4ab36060880d74bee98 | xxd -r -p | base58)\n\u003C/code>\u003C/pre>\n\u003Cp>Output:\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">1BfuU1LS3BDiRHtv3Tb8weAcFpFiT26YDm\n\u003C/code>\u003C/pre>\n\u003Cp>Now this address can be used to send bitcoins to!\u003C/p>\n\u003Cp>I have just sent 10,000 satoshis (0.00010000 BTC) as can be seen in the block explorer \u003Ca href=\"https://blockstream.info/address/1BfuU1LS3BDiRHtv3Tb8weAcFpFiT26YDm\">here\u003C/a>.\u003C/p>\n\u003Cp>It should now be trivial for anyone to take these funds (or any future funds sent to this address) with the private key data shown above, for which I will leave as an exercise for the reader 🤑. I wonder how long it will take for these funds to move... 🤔 😅\u003C/p>\n\u003Cp>Until next time! ✌️ 😎 ❤️\u003C/p>\n",title:"Generate a Bitcoin address on the command line",date:new Date(1674259200000),author:"jtraub91"},"uses":{"params":["slug"]}}],
+							form: null,
+							error: null
+						});
+					});
+				}
+			</script>
+		</div>
+	</body>
+</html>

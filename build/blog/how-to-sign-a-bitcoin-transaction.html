@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="../favicon.jpg" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		
+		<link href="../_app/immutable/assets/0.DPidJByt.css" rel="stylesheet">
+		<link href="../_app/immutable/assets/4.cuQNAo3a.css" rel="stylesheet">
+		<link rel="modulepreload" href="../_app/immutable/entry/start.KJh6PgXi.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/entry.ErmU7m1_.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/runtime.CoMFCokD.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/index-client.uip5C0tD.js">
+		<link rel="modulepreload" href="../_app/immutable/entry/app.D4pyBmeP.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/render.BNdOsU5-.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/disclose-version.CdsaJyap.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/props.0LGAYUSe.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/store.BTxSyo9A.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/0.NBz-YxCm.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/legacy.CTsEH1qb.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/lifecycle.BFAvy8Wq.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/4.DZS_Dq8I.js">
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents"><!--[--><!--[--><!----><div class="flex flex-col min-w-[420px]"><header class="flex flex-row"><div class="top-0 left-0 h-20 w-20 min-h-20 min-w-20"><a href="/" id="yoshi-github-jtraub91" class="svelte-dpys7o"><img src="/images/yoshi-github-jtraub91.jpg" alt="yoshi-github-jtraub91"></a></div> <a href="/blog" class="nav-link mx-2 mt-auto mb-0 font-mono text-lg text-[dodgerblue] hover:text-[indigo]  svelte-dpys7o">blog</a> <a href="/links" class="nav-link mx-2 mt-auto mb-0 font-mono text-lg text-[dodgerblue] hover:text-[indigo]  svelte-dpys7o"><span class="mb-0 mt-auto mx-auto">links</span></a></header><!----> <div class="flex flex-col"><!----><div class="flex flex-col"><h1 class="text-center svelte-1azcsk6">How to sign a Bitcoin transaction</h1> <div class="text-center text-sm text-gray-500">January 5, 2023</div> <article class="svelte-1azcsk6"><!----><p><em>Edited: 02/23/2023</em></p>
+<h2>Introduction</h2>
+<p>In the last blog post, we saw how to <a href="https://jtraub91.github.io/generate-a-bitcoin-address-on-the-command-line.html">generate a bitcoin address on the command line</a>. This was a base58-encoded address which was used to receive bitcoin in a pay-to-pubkey-hash transaction.</p>
+<p>In this post, you&#39;ll see how to create a transaction to send bitcoins to another address and sign it. The examples below will take place on bitcoin testnet.</p>
+<h3>Pre-requisites</h3>
+<p>To follow along you may need the following tools</p>
+<h4><a href="https://github.com/bitcoin/bitcoin">Bitcoin Core</a></h4>
+<p>We&#39;ll make use of <code>bitcoin-cli</code> configured for rpc interaction with a local <code>bitcoind</code> node</p>
+<h4><a href="https://github.com/openssl/openssl">OpenSSL</a></h4>
+<p><code>openssl</code> comes pre-installed on most systems</p>
+<h4><a href="https://github.com/tlsfuzzer/python-ecdsa">python-ecdsa</a></h4>
+<p>As an alternative to signing transactions with <code>bitcoin-cli</code> and <code>openssl</code>, we&#39;ll make use of this python library.</p>
+<h3>Create a raw transaction</h3>
+<p>I have a little bit of tBTC (testnet Bitcoin) at the address <code>mwDfF3Ukg81aV6ngxBQvTZWTK2ftj1Fr4T</code>, as can be seen by the following command.</p>
+<pre><code class="language-bash">bitcoin-cli scantxoutset start &#39;[&quot;addr(mwDfF3Ukg81aV6ngxBQvTZWTK2ftj1Fr4T)&quot;]&#39;
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">{
+  &quot;success&quot;: true,
+  &quot;txouts&quot;: 28387067,
+  &quot;height&quot;: 2417653,
+  &quot;bestblock&quot;: &quot;000000000000001c38720386eb2c9e1e5e4747cea424abe8264da9fd833614be&quot;,
+  &quot;unspents&quot;: [
+    {
+      &quot;txid&quot;: &quot;abf18fe8e1554f2d3b9826ec12de4bfc7d7ce5e04b9e4c1056c35dea54bc9727&quot;,
+      &quot;vout&quot;: 0,
+      &quot;scriptPubKey&quot;: &quot;76a914ac3cb4fc6ee6663e697c743aad0d89fd8eb4c15f88ac&quot;,
+      &quot;desc&quot;: &quot;addr(mwDfF3Ukg81aV6ngxBQvTZWTK2ftj1Fr4T)#8ax3vmec&quot;,
+      &quot;amount&quot;: 0.00899000,
+      &quot;height&quot;: 2412385
+    }
+  ],
+  &quot;total_amount&quot;: 0.00899000
+}
+</code></pre>
+<p>How do we send these bitcoins to another address?</p>
+<p>Well, I can create a raw transaction using <code>bitcoin-cli</code></p>
+<pre><code class="language-bash">bitcoin-cli createrawtransaction &quot;[{\&quot;txid\&quot;: \&quot;abf18fe8e1554f2d3b9826ec12de4bfc7d7ce5e04b9e4c1056c35dea54bc9727\&quot;, \&quot;vout\&quot;: 0}]&quot; &quot;[{\&quot;n3sSFbhzzefkutYmMCmzi26o5ECtbb8mCt\&quot;: 0.00898}]&quot;
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab0000000000fdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000
+</code></pre>
+<p>In the <code>createrawtransaction</code> command above, notice I&#39;ve used the <code>txid</code> and <code>vout</code> obtained from the <code>scantxoutset</code> command I ran prior. I&#39;ve also specified the address (<code>n3sSFbhzzefkutYmMCmzi26o5ECtbb8mCt</code>) for the output and included a 1,000 satoshi miner fee.</p>
+<p>(Note: In Bitcoin, unspent transaction outputs (UTXO) are always spent in full, and any amount not specified in a transaction output is assumed to be the miner fee.)</p>
+<p>Now we need to sign the transaction.</p>
+<p>With <code>bitcoin-cli</code> we can leverage the <code>signrawtransactionwithkey</code> method. To use this, we&#39;ll need to provide our private key in base58 <a href="https://en.bitcoin.it/wiki/Wallet_import_format">wallet import format</a> (WIF). To do that, first retrieve the key in hex format. Assuming our secret key is located in <code>secret.pem</code>,</p>
+<pre><code class="language-bash">openssl asn1parse -in secret.pem
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">    0:d=0  hl=2 l= 116 cons: SEQUENCE          
+    2:d=1  hl=2 l=   1 prim: INTEGER           :01
+    5:d=1  hl=2 l=  32 prim: OCTET STRING      [HEX DUMP]:56C2FE62B27107CC9ADFE6CE1D919E04C356B3A7D3B518F70C28C08480645AAB
+   39:d=1  hl=2 l=   7 cons: cont [ 0 ]        
+   41:d=2  hl=2 l=   5 prim: OBJECT            :secp256k1
+   48:d=1  hl=2 l=  68 cons: cont [ 1 ]        
+   50:d=2  hl=2 l=  66 prim: BIT STRING        
+</code></pre>
+<p>Grab the hex string shown on the third line. This is the private key, i.e.</p>
+<pre><code class="language-bash">56C2FE62B27107CC9ADFE6CE1D919E04C356B3A7D3B518F70C28C08480645AAB
+</code></pre>
+<p>To convert this to base58-encoded WIF, first prepend hex <code>80</code> for mainnet or <code>ef</code> for testnet, e.g.</p>
+<pre><code class="language-bash">EF56C2FE62B27107CC9ADFE6CE1D919E04C356B3A7D3B518F70C28C08480645AAB
+</code></pre>
+<p>And append <code>01</code> if the private key is for a compressed public key (which this key is)</p>
+<pre><code class="language-bash">EF56C2FE62B27107CC9ADFE6CE1D919E04C356B3A7D3B518F70C28C08480645AAB01
+</code></pre>
+<p>Finally, encode as base58check.</p>
+<pre><code class="language-bash">echo $(echo EF56C2FE62B27107CC9ADFE6CE1D919E04C356B3A7D3B518F70C28C08480645AAB01 | xxd -r -p | base58 -c)
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">cQVMYbVNK1i6JfJm6QyvK9JBo3JxxoQq1Q4hejckbttq8V6X7wvN
+</code></pre>
+<p>Now with <code>bitcoin-cli</code></p>
+<pre><code class="language-bash">bitcoin-cli signrawtransactionwithkey 02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab0000000000fdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000 &#39;[&quot;cQVMYbVNK1i6JfJm6QyvK9JBo3JxxoQq1Q4hejckbttq8V6X7wvN&quot;]&#39;
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">{
+  &quot;hex&quot;: &quot;02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab000000006a4730440220243f86753f140847b7aef58f1724cd3b9b2699a5ea860018a9066da2cfb97b53022042469edad507502a24c81bc57e637e180fb3bf81094e82beac4ee21f795eec1c012102726b45a5b1b506015dc926630b2627454d635d87eeb72bb7d5476d545d6769f9fdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000&quot;,
+  &quot;complete&quot;: true
+}
+</code></pre>
+<p>And we can verify this transaction, without actually sending it with</p>
+<pre><code class="language-bash">bitcoin-cli testmempoolaccept &#39;[&quot;02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab000000006a4730440220243f86753f140847b7aef58f1724cd3b9b2699a5ea860018a9066da2cfb97b53022042469edad507502a24c81bc57e637e180fb3bf81094e82beac4ee21f795eec1c012102726b45a5b1b506015dc926630b2627454d635d87eeb72bb7d5476d545d6769f9fdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000&quot;]&#39;
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">[
+  {
+    &quot;txid&quot;: &quot;723b4eba8757701244247b14aea4a12b02c278e5447b12f85495445f67c5c749&quot;,
+    &quot;wtxid&quot;: &quot;723b4eba8757701244247b14aea4a12b02c278e5447b12f85495445f67c5c749&quot;,
+    &quot;allowed&quot;: true,
+    &quot;vsize&quot;: 191,
+    &quot;fees&quot;: {
+      &quot;base&quot;: 0.00001000
+    }
+  }
+]
+</code></pre>
+<p>Cool. 😎</p>
+<p>Now let&#39;s see how we can sign transactions with other tools but still verify them with <code>bitcoin-cli</code>.</p>
+<h3>Signing with <code>openssl</code></h3>
+<p>So we have the raw transaction, i.e.</p>
+<pre><code class="language-bash">02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab0000000000fdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000
+</code></pre>
+<p>First, let&#39;s take a look at the transaction data structure.</p>
+<p>The following shows the transaction data with description for each part. Most values are seen as hex-encoded little endian bytes.</p>
+<pre><code class="language-bash">02000000            # tx version 2
+01                  # number of tx inputs
+  # txin1 txid
+  2797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab
+  00000000            # txin1 output number
+  00                  # txin1 scriptsig length
+  fdffffff            # txin1 sequence number
+01                  # number of tx outputs
+  d0b30d0000000000    # value
+  19                  # txout1 scriptpubkey length
+  # txout1 scriptpubkey
+  76a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac
+00000000            # tx locktime
+</code></pre>
+<h3>Internal Byte Order</h3>
+<p>You may notice that the txid seen in the above transaction (<code>2797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab</code>) doesn&#39;t look quite the same as that seen in the <code>scantxoutset</code> command at the beginning of this blog (<code>abf18fe8e1554f2d3b9826ec12de4bfc7d7ce5e04b9e4c1056c35dea54bc9727</code>). This is because the latter returns the txid in <a href="https://developer.bitcoin.org/glossary.html">rpc byte order</a> whereas the former is referred to as <a href="https://developer.bitcoin.org/glossary.html">internal byte order</a>. The difference essentially amounts to a reversal of the byte order. We can convert from rpc byte order to internal byte order with the following python code.</p>
+<pre><code class="language-python">&gt;&gt;&gt; txid = bytearray(bytes.fromhex(&quot;abf18fe8e1554f2d3b9826ec12de4bfc7d7ce5e04b9e4c1056c35dea54bc9727&quot;))
+&gt;&gt;&gt; txid.reverse()
+&gt;&gt;&gt; txid.hex()
+&#39;2797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab&#39;
+</code></pre>
+<h3>Preparing the signature data</h3>
+<p>One aspect that <code>bitcoin-cli</code> conceals when using <code>signrawtransactionwithkey</code> is that each input&#39;s outpoint&#39;s scriptPubKey is actually used as its scriptSig while signing.</p>
+<p>So we&#39;re not actually signing the above transaction exactly; we&#39;ll need to insert the previous outpoint&#39;s scriptPubKey first.</p>
+<p>If you recall, that information was provided in the output from an earlier command, e.g.</p>
+<pre><code class="language-bash">bitcoin-cli scantxoutset start &#39;[&quot;addr(mwDfF3Ukg81aV6ngxBQvTZWTK2ftj1Fr4T)&quot;]&#39;
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">{
+  &quot;success&quot;: true,
+  &quot;txouts&quot;: 28387067,
+  &quot;height&quot;: 2417653,
+  &quot;bestblock&quot;: &quot;000000000000001c38720386eb2c9e1e5e4747cea424abe8264da9fd833614be&quot;,
+  &quot;unspents&quot;: [
+    {
+      &quot;txid&quot;: &quot;abf18fe8e1554f2d3b9826ec12de4bfc7d7ce5e04b9e4c1056c35dea54bc9727&quot;,
+      &quot;vout&quot;: 0,
+      &quot;scriptPubKey&quot;: &quot;76a914ac3cb4fc6ee6663e697c743aad0d89fd8eb4c15f88ac&quot;,
+      &quot;desc&quot;: &quot;addr(mwDfF3Ukg81aV6ngxBQvTZWTK2ftj1Fr4T)#8ax3vmec&quot;,
+      &quot;amount&quot;: 0.00899000,
+      &quot;height&quot;: 2412385
+    }
+  ],
+  &quot;total_amount&quot;: 0.00899000
+}
+</code></pre>
+<p>Including this in our raw transaction, and remembering to add the script length as hex <code>19</code> (encoded as a <a href="https://developer.bitcoin.org/glossary.html">compact size</a> uint), the serialization becomes</p>
+<pre><code class="language-bash">02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab000000001976a914ac3cb4fc6ee6663e697c743aad0d89fd8eb4c15f88acfdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000
+</code></pre>
+<p>Before signing, we append <code>SIGHASH_ALL</code> (<code>0x01</code>) encoded as 4-bytes, little-endian.</p>
+<pre><code class="language-bash">02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab000000001976a914ac3cb4fc6ee6663e697c743aad0d89fd8eb4c15f88acfdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac0000000001000000
+</code></pre>
+<p>Then we take the double sha256 hash of this and sign it with <code>openssl</code> as follows.</p>
+<pre><code class="language-bash">echo 02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab000000001976a914ac3cb4fc6ee6663e697c743aad0d89fd8eb4c15f88acfdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac0000000001000000 | xxd -r -p | openssl sha256 | xxd -r -p | openssl sha256 -sign secret.pem | xxd -p -c 1000
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">3045022100df741c554ee34ab636a213956abf85fd4d05143026eb7b5f07ba56ac8978687902207c7e70f5790c6146599dd7c035111b93f131d95591b6030c80b1010d2e047ed3
+</code></pre>
+<p>Note: The signing algorithm is not deterministic and will result in different values each time for the same signature data and key</p>
+<p>Hint: You can verify signatures with <code>openssl</code> using the <code>-verify</code> flag. E.g.</p>
+<pre><code class="language-bash">openssl sha256 -verify [file] -signature [file] [file ...]
+</code></pre>
+<p>Finally, we replace / insert in the original transaction, the correct scriptSig, which for pay-to-pubkeyhash transactions is denoted in Bitcoin <a href="https://en.bitcoin.it/wiki/Script">Script</a> as</p>
+<pre><code class="language-bash">&lt;sig&gt; &lt;pubkey&gt;
+</code></pre>
+<p>Implied in the above Script are data pushes for the <code>&lt;sig&gt;</code> and <code>&lt;pubkey&gt;</code>, respectively. Also, keep in mind that <code>&lt;sig&gt;</code> includes a single byte for the <a href="https://river.com/learn/terms/s/sighash-flag/">SIGHASH flag</a> appended to it.</p>
+<p>With the <code>mwDfF3Ukg81aV6ngxBQvTZWTK2ftj1Fr4T</code> address corresponding to a compressed pubkey of <code>02726b45a5b1b506015dc926630b2627454d635d87eeb72bb7d5476d545d6769f9</code>, the script sig becomes.</p>
+<pre><code class="language-bash">483045022100df741c554ee34ab636a213956abf85fd4d05143026eb7b5f07ba56ac8978687902207c7e70f5790c6146599dd7c035111b93f131d95591b6030c80b1010d2e047ed3012102726b45a5b1b506015dc926630b2627454d635d87eeb72bb7d5476d545d6769f9
+</code></pre>
+<p>This entire scriptSig accounts for a length of <code>0x6b</code>. With this, the transaction becomes</p>
+<pre><code class="language-bash">02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab000000006b483045022100df741c554ee34ab636a213956abf85fd4d05143026eb7b5f07ba56ac8978687902207c7e70f5790c6146599dd7c035111b93f131d95591b6030c80b1010d2e047ed3012102726b45a5b1b506015dc926630b2627454d635d87eeb72bb7d5476d545d6769f9fdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000
+</code></pre>
+<p>Let&#39;s test it with `testmempoolaccept&#39;</p>
+<pre><code class="language-bash">bitcoin-cli testmempoolaccept &#39;[&quot;02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab000000006b483045022100df741c554ee34ab636a213956abf85fd4d05143026eb7b5f07ba56ac8978687902207c7e70f5790c6146599dd7c035111b93f131d95591b6030c80b1010d2e047ed3012102726b45a5b1b506015dc926630b2627454d635d87eeb72bb7d5476d545d6769f9fdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000&quot;]&#39;
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">[{&#39;txid&#39;: &#39;766a1be97eed0bc3f3c1e350f1c4cc2c0a634f676bedcc7cc116379f619abec6&#39;, &#39;wtxid&#39;: &#39;766a1be97eed0bc3f3c1e350f1c4cc2c0a634f676bedcc7cc116379f619abec6&#39;, &#39;allowed&#39;: True, &#39;vsize&#39;: 192, &#39;fees&#39;: {&#39;base&#39;: 1e-05}}]
+</code></pre>
+<p>Sweet. 🍭</p>
+<p>Note: Often the signature obtained from <code>openssl</code> will not be a &quot;canonical&quot; signature and thus marked as invalid for the Bitcoin transaction. See <a href="https://github.com/bitcoin/bips/blob/master/bip-0062.mediawiki#low-s-values-in-signatures">BIP62</a> for details. If this happens, <code>testmempoolaccept</code> may give you the following error: <code>mandatory-script-verify-flag-failed (Non-canonical signature: S value is unnecessarily high)</code>. You might have to try re-creating the signature until you get a proper s-value.</p>
+<h4>Signing with <code>python-ecdsa</code></h4>
+<p>As an alternative (and potentially <a href="https://github.com/tlsfuzzer/python-ecdsa#security">less secure</a>) way to sign the transaction we can use <code>python-ecdsa</code>. You can install it from <a href="https://pypi.org/">pypi</a> with the following.</p>
+<pre><code class="language-bash">pip install ecdsa
+</code></pre>
+<p>We&#39;ll start from the raw transaction we created earlier with <code>bitcoin-cli</code></p>
+<pre><code class="language-python">raw_tx = bytes.fromhex(&quot;02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab0000000000fdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000&quot;)
+</code></pre>
+<p>And, of course we insert the previous outpoint&#39;s scriptPubKey for signing, as well as append the <code>SIGHASH_ALL</code> bytes.</p>
+<pre><code class="language-python">sig_data = bytes.fromhex(&quot;02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab000000001976a914ac3cb4fc6ee6663e697c743aad0d89fd8eb4c15f88acfdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac0000000001000000&quot;)
+</code></pre>
+<p>From here, like before, we take the double sha256 hash and sign it. We can use python&#39;s <a href="https://docs.python.org/3/library/hashlib.html">hashlib</a> for taking sha256, and we&#39;ll use <code>python-ecdsa</code> to sign.</p>
+<pre><code class="language-python">&gt;&gt;&gt; import hashlib
+&gt;&gt;&gt; import ecdsa
+&gt;&gt;&gt; sig_data = hashlib.sha256(hashlib.sha256(sig_data).digest()).digest()
+&gt;&gt;&gt; with open(&quot;secret.pem&quot;, &quot;rb&quot;) as pem_file:
+...     pem = pem_file.read()
+...
+&gt;&gt;&gt; sk = ecdsa.SigningKey.from_pem(pem)
+&gt;&gt;&gt; sig = sk.sign_digest(sig_data, sigencode=ecdsa.util.sigencode_der)
+&gt;&gt;&gt; sig.hex()
+&#39;3044022064ca8305562c788a7f7b17d68a2c0141f7b62914e7f2950fe043f01bfbbb99e902201179d318d6332b871827b8fb310b013f19401c6ea74adbde990e466c736285a7&#39;
+</code></pre>
+<p>Again, we take this signature and the previous outpoint&#39;s pubkey to form the scriptSig</p>
+<pre><code class="language-python">&gt;&gt;&gt; SIGHASH_ALL = 0x01
+&gt;&gt;&gt; pubkey = bytes.fromhex(&quot;02726b45a5b1b506015dc926630b2627454d635d87eeb72bb7d5476d545d6769f9&quot;)
+&gt;&gt;&gt; p2pkh_script_sig = (len(sig) + 1).to_bytes(1, &quot;little&quot;) + sig + SIGHASH_ALL.to_bytes(1, &quot;little&quot;) + len(pubkey).to_bytes(1, &quot;little&quot;) + pubkey
+&gt;&gt;&gt; p2pkh_script_sig.hex()
+&#39;473044022064ca8305562c788a7f7b17d68a2c0141f7b62914e7f2950fe043f01bfbbb99e902201179d318d6332b871827b8fb310b013f19401c6ea74adbde990e466c736285a7012102726b45a5b1b506015dc926630b2627454d635d87eeb72bb7d5476d545d6769f9&#39;
+</code></pre>
+<p>Now finally, we replace this scriptSig in the original transaction (including the OP_PUSHDATA of hex <code>6a</code> for its length).</p>
+<pre><code class="language-bash">02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab000000006a473044022064ca8305562c788a7f7b17d68a2c0141f7b62914e7f2950fe043f01bfbbb99e902201179d318d6332b871827b8fb310b013f19401c6ea74adbde990e466c736285a7012102726b45a5b1b506015dc926630b2627454d635d87eeb72bb7d5476d545d6769f9fdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000
+</code></pre>
+<p>And test it with <code>bitcoin-cli</code>&#39;s <code>testmempoolaccept</code></p>
+<pre><code class="language-bash">bitcoin-cli testmempoolaccept &#39;[&quot;02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab000000006a473044022064ca8305562c788a7f7b17d68a2c0141f7b62914e7f2950fe043f01bfbbb99e902201179d318d6332b871827b8fb310b013f19401c6ea74adbde990e466c736285a7012102726b45a5b1b506015dc926630b2627454d635d87eeb72bb7d5476d545d6769f9fdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000&quot;]&#39;
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">[{&#39;txid&#39;: &#39;e110d9ab2c5af39b35724f1a9de28379f3c4dd0c0ceb96c44e87787351b567b4&#39;, &#39;wtxid&#39;: &#39;e110d9ab2c5af39b35724f1a9de28379f3c4dd0c0ceb96c44e87787351b567b4&#39;, &#39;allowed&#39;: True, &#39;vsize&#39;: 191, &#39;fees&#39;: {&#39;base&#39;: 1e-05}}]
+</code></pre>
+<p>Nice. 🤓</p>
+<h3>Conclusion</h3>
+<p>And there we have it. Just by using some open source tooling we can create keys, generate Bitcoin addresses, create raw transactions, and sign them for spenditure. We got somewhat lucky with <code>openssl</code> and <code>python-ecdsa</code> by generating canonical signatures on the first try. If we hadn&#39;t, we could have simply re-tried until achieveing one.</p>
+<h4>Final thoughts on <code>python-ecdsa</code> security</h4>
+<p>You may ask why I chose to show the use of <code>python-ecdsa</code> if it is potentially <a href="https://github.com/tlsfuzzer/python-ecdsa#security">less secure</a>. Honestly, I&#39;m not sure 😅. I sort of wanted to document how to do it with this Python library anyways 🤷‍♂️.  Also, candidly, I don&#39;t completely understand the security risks in <code>python-ecdsa</code>&#39;s README. I think I understand what a <a href="https://en.wikipedia.org/wiki/Side-channel_attack">side-channel attack</a> <em>is</em>, but how much of a concern is it really? Does <code>openssl</code> provide security against these attacks? What about other common Bitcoin wallets and libraries? Furthermore, <code>python-ecdsa</code>&#39;s README proclaims that any pure Python implementation would be vulnerable since &quot;Python does not provide side channel secure primitives&quot;. That seems like a bold accusation. Is it true? At the end of the day, I don&#39;t know, and I suppose I will have to the leave it to the cryptographic experts for now. If side-channel secure programming is indeed &quot;impossible&quot; in pure Python, I would hope there&#39;d be some effort to fix or improve that. Either way, I&#39;m hoping to stir some conversation from the community with this blog.</p>
+<h4>Actually sending the transaction on Bitcoin Testnet</h4>
+<p>Finally, I&#39;ll go ahead and actually send the transaction on Testnet (using the transaction signed via <code>openssl</code> shown above)</p>
+<pre><code class="language-bash">bitcoin-cli sendrawtransaction &quot;02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab000000006b483045022100df741c554ee34ab636a213956abf85fd4d05143026eb7b5f07ba56ac8978687902207c7e70f5790c6146599dd7c035111b93f131d95591b6030c80b1010d2e047ed3012102726b45a5b1b506015dc926630b2627454d635d87eeb72bb7d5476d545d6769f9fdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000&quot;
+</code></pre>
+<p>Output:</p>
+<pre><code class="language-bash">766a1be97eed0bc3f3c1e350f1c4cc2c0a634f676bedcc7cc116379f619abec6
+</code></pre>
+<p>I hope y&#39;all enjoyed this blog. Stay tuned for more content! ✌️</p>
+<!----></article><!----></div><!----><!----></div> <footer class="bottom-0 w-full flex flex-row text-gray-500 text-xs"><span class="m-auto p-2">© 2025 Jason Traub</span></footer><!----></div><!----><!--]--> <!--[!--><!--]--><!--]-->
+			
+			<script>
+				{
+					__sveltekit_1w70g9p = {
+						base: new URL("..", location).pathname.slice(0, -1)
+					};
+
+					const element = document.currentScript.parentElement;
+
+					Promise.all([
+						import("../_app/immutable/entry/start.KJh6PgXi.js"),
+						import("../_app/immutable/entry/app.D4pyBmeP.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element, {
+							node_ids: [0, 4],
+							data: [null,{"type":"data","data":{content:"\u003Cp>\u003Cem>Edited: 02/23/2023\u003C/em>\u003C/p>\n\u003Ch2>Introduction\u003C/h2>\n\u003Cp>In the last blog post, we saw how to \u003Ca href=\"https://jtraub91.github.io/generate-a-bitcoin-address-on-the-command-line.html\">generate a bitcoin address on the command line\u003C/a>. This was a base58-encoded address which was used to receive bitcoin in a pay-to-pubkey-hash transaction.\u003C/p>\n\u003Cp>In this post, you&#39;ll see how to create a transaction to send bitcoins to another address and sign it. The examples below will take place on bitcoin testnet.\u003C/p>\n\u003Ch3>Pre-requisites\u003C/h3>\n\u003Cp>To follow along you may need the following tools\u003C/p>\n\u003Ch4>\u003Ca href=\"https://github.com/bitcoin/bitcoin\">Bitcoin Core\u003C/a>\u003C/h4>\n\u003Cp>We&#39;ll make use of \u003Ccode>bitcoin-cli\u003C/code> configured for rpc interaction with a local \u003Ccode>bitcoind\u003C/code> node\u003C/p>\n\u003Ch4>\u003Ca href=\"https://github.com/openssl/openssl\">OpenSSL\u003C/a>\u003C/h4>\n\u003Cp>\u003Ccode>openssl\u003C/code> comes pre-installed on most systems\u003C/p>\n\u003Ch4>\u003Ca href=\"https://github.com/tlsfuzzer/python-ecdsa\">python-ecdsa\u003C/a>\u003C/h4>\n\u003Cp>As an alternative to signing transactions with \u003Ccode>bitcoin-cli\u003C/code> and \u003Ccode>openssl\u003C/code>, we&#39;ll make use of this python library.\u003C/p>\n\u003Ch3>Create a raw transaction\u003C/h3>\n\u003Cp>I have a little bit of tBTC (testnet Bitcoin) at the address \u003Ccode>mwDfF3Ukg81aV6ngxBQvTZWTK2ftj1Fr4T\u003C/code>, as can be seen by the following command.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">bitcoin-cli scantxoutset start &#39;[&quot;addr(mwDfF3Ukg81aV6ngxBQvTZWTK2ftj1Fr4T)&quot;]&#39;\n\u003C/code>\u003C/pre>\n\u003Cp>Output:\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">{\n  &quot;success&quot;: true,\n  &quot;txouts&quot;: 28387067,\n  &quot;height&quot;: 2417653,\n  &quot;bestblock&quot;: &quot;000000000000001c38720386eb2c9e1e5e4747cea424abe8264da9fd833614be&quot;,\n  &quot;unspents&quot;: [\n    {\n      &quot;txid&quot;: &quot;abf18fe8e1554f2d3b9826ec12de4bfc7d7ce5e04b9e4c1056c35dea54bc9727&quot;,\n      &quot;vout&quot;: 0,\n      &quot;scriptPubKey&quot;: &quot;76a914ac3cb4fc6ee6663e697c743aad0d89fd8eb4c15f88ac&quot;,\n      &quot;desc&quot;: &quot;addr(mwDfF3Ukg81aV6ngxBQvTZWTK2ftj1Fr4T)#8ax3vmec&quot;,\n      &quot;amount&quot;: 0.00899000,\n      &quot;height&quot;: 2412385\n    }\n  ],\n  &quot;total_amount&quot;: 0.00899000\n}\n\u003C/code>\u003C/pre>\n\u003Cp>How do we send these bitcoins to another address?\u003C/p>\n\u003Cp>Well, I can create a raw transaction using \u003Ccode>bitcoin-cli\u003C/code>\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">bitcoin-cli createrawtransaction &quot;[{\\&quot;txid\\&quot;: \\&quot;abf18fe8e1554f2d3b9826ec12de4bfc7d7ce5e04b9e4c1056c35dea54bc9727\\&quot;, \\&quot;vout\\&quot;: 0}]&quot; &quot;[{\\&quot;n3sSFbhzzefkutYmMCmzi26o5ECtbb8mCt\\&quot;: 0.00898}]&quot;\n\u003C/code>\u003C/pre>\n\u003Cp>Output:\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab0000000000fdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000\n\u003C/code>\u003C/pre>\n\u003Cp>In the \u003Ccode>createrawtransaction\u003C/code> command above, notice I&#39;ve used the \u003Ccode>txid\u003C/code> and \u003Ccode>vout\u003C/code> obtained from the \u003Ccode>scantxoutset\u003C/code> command I ran prior. I&#39;ve also specified the address (\u003Ccode>n3sSFbhzzefkutYmMCmzi26o5ECtbb8mCt\u003C/code>) for the output and included a 1,000 satoshi miner fee.\u003C/p>\n\u003Cp>(Note: In Bitcoin, unspent transaction outputs (UTXO) are always spent in full, and any amount not specified in a transaction output is assumed to be the miner fee.)\u003C/p>\n\u003Cp>Now we need to sign the transaction.\u003C/p>\n\u003Cp>With \u003Ccode>bitcoin-cli\u003C/code> we can leverage the \u003Ccode>signrawtransactionwithkey\u003C/code> method. To use this, we&#39;ll need to provide our private key in base58 \u003Ca href=\"https://en.bitcoin.it/wiki/Wallet_import_format\">wallet import format\u003C/a> (WIF). To do that, first retrieve the key in hex format. Assuming our secret key is located in \u003Ccode>secret.pem\u003C/code>,\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">openssl asn1parse -in secret.pem\n\u003C/code>\u003C/pre>\n\u003Cp>Output:\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">    0:d=0  hl=2 l= 116 cons: SEQUENCE          \n    2:d=1  hl=2 l=   1 prim: INTEGER           :01\n    5:d=1  hl=2 l=  32 prim: OCTET STRING      [HEX DUMP]:56C2FE62B27107CC9ADFE6CE1D919E04C356B3A7D3B518F70C28C08480645AAB\n   39:d=1  hl=2 l=   7 cons: cont [ 0 ]        \n   41:d=2  hl=2 l=   5 prim: OBJECT            :secp256k1\n   48:d=1  hl=2 l=  68 cons: cont [ 1 ]        \n   50:d=2  hl=2 l=  66 prim: BIT STRING        \n\u003C/code>\u003C/pre>\n\u003Cp>Grab the hex string shown on the third line. This is the private key, i.e.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">56C2FE62B27107CC9ADFE6CE1D919E04C356B3A7D3B518F70C28C08480645AAB\n\u003C/code>\u003C/pre>\n\u003Cp>To convert this to base58-encoded WIF, first prepend hex \u003Ccode>80\u003C/code> for mainnet or \u003Ccode>ef\u003C/code> for testnet, e.g.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">EF56C2FE62B27107CC9ADFE6CE1D919E04C356B3A7D3B518F70C28C08480645AAB\n\u003C/code>\u003C/pre>\n\u003Cp>And append \u003Ccode>01\u003C/code> if the private key is for a compressed public key (which this key is)\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">EF56C2FE62B27107CC9ADFE6CE1D919E04C356B3A7D3B518F70C28C08480645AAB01\n\u003C/code>\u003C/pre>\n\u003Cp>Finally, encode as base58check.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">echo $(echo EF56C2FE62B27107CC9ADFE6CE1D919E04C356B3A7D3B518F70C28C08480645AAB01 | xxd -r -p | base58 -c)\n\u003C/code>\u003C/pre>\n\u003Cp>Output:\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">cQVMYbVNK1i6JfJm6QyvK9JBo3JxxoQq1Q4hejckbttq8V6X7wvN\n\u003C/code>\u003C/pre>\n\u003Cp>Now with \u003Ccode>bitcoin-cli\u003C/code>\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">bitcoin-cli signrawtransactionwithkey 02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab0000000000fdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000 &#39;[&quot;cQVMYbVNK1i6JfJm6QyvK9JBo3JxxoQq1Q4hejckbttq8V6X7wvN&quot;]&#39;\n\u003C/code>\u003C/pre>\n\u003Cp>Output:\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">{\n  &quot;hex&quot;: &quot;02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab000000006a4730440220243f86753f140847b7aef58f1724cd3b9b2699a5ea860018a9066da2cfb97b53022042469edad507502a24c81bc57e637e180fb3bf81094e82beac4ee21f795eec1c012102726b45a5b1b506015dc926630b2627454d635d87eeb72bb7d5476d545d6769f9fdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000&quot;,\n  &quot;complete&quot;: true\n}\n\u003C/code>\u003C/pre>\n\u003Cp>And we can verify this transaction, without actually sending it with\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">bitcoin-cli testmempoolaccept &#39;[&quot;02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab000000006a4730440220243f86753f140847b7aef58f1724cd3b9b2699a5ea860018a9066da2cfb97b53022042469edad507502a24c81bc57e637e180fb3bf81094e82beac4ee21f795eec1c012102726b45a5b1b506015dc926630b2627454d635d87eeb72bb7d5476d545d6769f9fdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000&quot;]&#39;\n\u003C/code>\u003C/pre>\n\u003Cp>Output:\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">[\n  {\n    &quot;txid&quot;: &quot;723b4eba8757701244247b14aea4a12b02c278e5447b12f85495445f67c5c749&quot;,\n    &quot;wtxid&quot;: &quot;723b4eba8757701244247b14aea4a12b02c278e5447b12f85495445f67c5c749&quot;,\n    &quot;allowed&quot;: true,\n    &quot;vsize&quot;: 191,\n    &quot;fees&quot;: {\n      &quot;base&quot;: 0.00001000\n    }\n  }\n]\n\u003C/code>\u003C/pre>\n\u003Cp>Cool. 😎\u003C/p>\n\u003Cp>Now let&#39;s see how we can sign transactions with other tools but still verify them with \u003Ccode>bitcoin-cli\u003C/code>.\u003C/p>\n\u003Ch3>Signing with \u003Ccode>openssl\u003C/code>\u003C/h3>\n\u003Cp>So we have the raw transaction, i.e.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab0000000000fdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000\n\u003C/code>\u003C/pre>\n\u003Cp>First, let&#39;s take a look at the transaction data structure.\u003C/p>\n\u003Cp>The following shows the transaction data with description for each part. Most values are seen as hex-encoded little endian bytes.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">02000000            # tx version 2\n01                  # number of tx inputs\n  # txin1 txid\n  2797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab\n  00000000            # txin1 output number\n  00                  # txin1 scriptsig length\n  fdffffff            # txin1 sequence number\n01                  # number of tx outputs\n  d0b30d0000000000    # value\n  19                  # txout1 scriptpubkey length\n  # txout1 scriptpubkey\n  76a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac\n00000000            # tx locktime\n\u003C/code>\u003C/pre>\n\u003Ch3>Internal Byte Order\u003C/h3>\n\u003Cp>You may notice that the txid seen in the above transaction (\u003Ccode>2797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab\u003C/code>) doesn&#39;t look quite the same as that seen in the \u003Ccode>scantxoutset\u003C/code> command at the beginning of this blog (\u003Ccode>abf18fe8e1554f2d3b9826ec12de4bfc7d7ce5e04b9e4c1056c35dea54bc9727\u003C/code>). This is because the latter returns the txid in \u003Ca href=\"https://developer.bitcoin.org/glossary.html\">rpc byte order\u003C/a> whereas the former is referred to as \u003Ca href=\"https://developer.bitcoin.org/glossary.html\">internal byte order\u003C/a>. The difference essentially amounts to a reversal of the byte order. We can convert from rpc byte order to internal byte order with the following python code.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-python\">&gt;&gt;&gt; txid = bytearray(bytes.fromhex(&quot;abf18fe8e1554f2d3b9826ec12de4bfc7d7ce5e04b9e4c1056c35dea54bc9727&quot;))\n&gt;&gt;&gt; txid.reverse()\n&gt;&gt;&gt; txid.hex()\n&#39;2797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab&#39;\n\u003C/code>\u003C/pre>\n\u003Ch3>Preparing the signature data\u003C/h3>\n\u003Cp>One aspect that \u003Ccode>bitcoin-cli\u003C/code> conceals when using \u003Ccode>signrawtransactionwithkey\u003C/code> is that each input&#39;s outpoint&#39;s scriptPubKey is actually used as its scriptSig while signing.\u003C/p>\n\u003Cp>So we&#39;re not actually signing the above transaction exactly; we&#39;ll need to insert the previous outpoint&#39;s scriptPubKey first.\u003C/p>\n\u003Cp>If you recall, that information was provided in the output from an earlier command, e.g.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">bitcoin-cli scantxoutset start &#39;[&quot;addr(mwDfF3Ukg81aV6ngxBQvTZWTK2ftj1Fr4T)&quot;]&#39;\n\u003C/code>\u003C/pre>\n\u003Cp>Output:\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">{\n  &quot;success&quot;: true,\n  &quot;txouts&quot;: 28387067,\n  &quot;height&quot;: 2417653,\n  &quot;bestblock&quot;: &quot;000000000000001c38720386eb2c9e1e5e4747cea424abe8264da9fd833614be&quot;,\n  &quot;unspents&quot;: [\n    {\n      &quot;txid&quot;: &quot;abf18fe8e1554f2d3b9826ec12de4bfc7d7ce5e04b9e4c1056c35dea54bc9727&quot;,\n      &quot;vout&quot;: 0,\n      &quot;scriptPubKey&quot;: &quot;76a914ac3cb4fc6ee6663e697c743aad0d89fd8eb4c15f88ac&quot;,\n      &quot;desc&quot;: &quot;addr(mwDfF3Ukg81aV6ngxBQvTZWTK2ftj1Fr4T)#8ax3vmec&quot;,\n      &quot;amount&quot;: 0.00899000,\n      &quot;height&quot;: 2412385\n    }\n  ],\n  &quot;total_amount&quot;: 0.00899000\n}\n\u003C/code>\u003C/pre>\n\u003Cp>Including this in our raw transaction, and remembering to add the script length as hex \u003Ccode>19\u003C/code> (encoded as a \u003Ca href=\"https://developer.bitcoin.org/glossary.html\">compact size\u003C/a> uint), the serialization becomes\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab000000001976a914ac3cb4fc6ee6663e697c743aad0d89fd8eb4c15f88acfdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000\n\u003C/code>\u003C/pre>\n\u003Cp>Before signing, we append \u003Ccode>SIGHASH_ALL\u003C/code> (\u003Ccode>0x01\u003C/code>) encoded as 4-bytes, little-endian.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab000000001976a914ac3cb4fc6ee6663e697c743aad0d89fd8eb4c15f88acfdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac0000000001000000\n\u003C/code>\u003C/pre>\n\u003Cp>Then we take the double sha256 hash of this and sign it with \u003Ccode>openssl\u003C/code> as follows.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">echo 02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab000000001976a914ac3cb4fc6ee6663e697c743aad0d89fd8eb4c15f88acfdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac0000000001000000 | xxd -r -p | openssl sha256 | xxd -r -p | openssl sha256 -sign secret.pem | xxd -p -c 1000\n\u003C/code>\u003C/pre>\n\u003Cp>Output:\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">3045022100df741c554ee34ab636a213956abf85fd4d05143026eb7b5f07ba56ac8978687902207c7e70f5790c6146599dd7c035111b93f131d95591b6030c80b1010d2e047ed3\n\u003C/code>\u003C/pre>\n\u003Cp>Note: The signing algorithm is not deterministic and will result in different values each time for the same signature data and key\u003C/p>\n\u003Cp>Hint: You can verify signatures with \u003Ccode>openssl\u003C/code> using the \u003Ccode>-verify\u003C/code> flag. E.g.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">openssl sha256 -verify [file] -signature [file] [file ...]\n\u003C/code>\u003C/pre>\n\u003Cp>Finally, we replace / insert in the original transaction, the correct scriptSig, which for pay-to-pubkeyhash transactions is denoted in Bitcoin \u003Ca href=\"https://en.bitcoin.it/wiki/Script\">Script\u003C/a> as\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">&lt;sig&gt; &lt;pubkey&gt;\n\u003C/code>\u003C/pre>\n\u003Cp>Implied in the above Script are data pushes for the \u003Ccode>&lt;sig&gt;\u003C/code> and \u003Ccode>&lt;pubkey&gt;\u003C/code>, respectively. Also, keep in mind that \u003Ccode>&lt;sig&gt;\u003C/code> includes a single byte for the \u003Ca href=\"https://river.com/learn/terms/s/sighash-flag/\">SIGHASH flag\u003C/a> appended to it.\u003C/p>\n\u003Cp>With the \u003Ccode>mwDfF3Ukg81aV6ngxBQvTZWTK2ftj1Fr4T\u003C/code> address corresponding to a compressed pubkey of \u003Ccode>02726b45a5b1b506015dc926630b2627454d635d87eeb72bb7d5476d545d6769f9\u003C/code>, the script sig becomes.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">483045022100df741c554ee34ab636a213956abf85fd4d05143026eb7b5f07ba56ac8978687902207c7e70f5790c6146599dd7c035111b93f131d95591b6030c80b1010d2e047ed3012102726b45a5b1b506015dc926630b2627454d635d87eeb72bb7d5476d545d6769f9\n\u003C/code>\u003C/pre>\n\u003Cp>This entire scriptSig accounts for a length of \u003Ccode>0x6b\u003C/code>. With this, the transaction becomes\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab000000006b483045022100df741c554ee34ab636a213956abf85fd4d05143026eb7b5f07ba56ac8978687902207c7e70f5790c6146599dd7c035111b93f131d95591b6030c80b1010d2e047ed3012102726b45a5b1b506015dc926630b2627454d635d87eeb72bb7d5476d545d6769f9fdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000\n\u003C/code>\u003C/pre>\n\u003Cp>Let&#39;s test it with `testmempoolaccept&#39;\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">bitcoin-cli testmempoolaccept &#39;[&quot;02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab000000006b483045022100df741c554ee34ab636a213956abf85fd4d05143026eb7b5f07ba56ac8978687902207c7e70f5790c6146599dd7c035111b93f131d95591b6030c80b1010d2e047ed3012102726b45a5b1b506015dc926630b2627454d635d87eeb72bb7d5476d545d6769f9fdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000&quot;]&#39;\n\u003C/code>\u003C/pre>\n\u003Cp>Output:\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">[{&#39;txid&#39;: &#39;766a1be97eed0bc3f3c1e350f1c4cc2c0a634f676bedcc7cc116379f619abec6&#39;, &#39;wtxid&#39;: &#39;766a1be97eed0bc3f3c1e350f1c4cc2c0a634f676bedcc7cc116379f619abec6&#39;, &#39;allowed&#39;: True, &#39;vsize&#39;: 192, &#39;fees&#39;: {&#39;base&#39;: 1e-05}}]\n\u003C/code>\u003C/pre>\n\u003Cp>Sweet. 🍭\u003C/p>\n\u003Cp>Note: Often the signature obtained from \u003Ccode>openssl\u003C/code> will not be a &quot;canonical&quot; signature and thus marked as invalid for the Bitcoin transaction. See \u003Ca href=\"https://github.com/bitcoin/bips/blob/master/bip-0062.mediawiki#low-s-values-in-signatures\">BIP62\u003C/a> for details. If this happens, \u003Ccode>testmempoolaccept\u003C/code> may give you the following error: \u003Ccode>mandatory-script-verify-flag-failed (Non-canonical signature: S value is unnecessarily high)\u003C/code>. You might have to try re-creating the signature until you get a proper s-value.\u003C/p>\n\u003Ch4>Signing with \u003Ccode>python-ecdsa\u003C/code>\u003C/h4>\n\u003Cp>As an alternative (and potentially \u003Ca href=\"https://github.com/tlsfuzzer/python-ecdsa#security\">less secure\u003C/a>) way to sign the transaction we can use \u003Ccode>python-ecdsa\u003C/code>. You can install it from \u003Ca href=\"https://pypi.org/\">pypi\u003C/a> with the following.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">pip install ecdsa\n\u003C/code>\u003C/pre>\n\u003Cp>We&#39;ll start from the raw transaction we created earlier with \u003Ccode>bitcoin-cli\u003C/code>\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-python\">raw_tx = bytes.fromhex(&quot;02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab0000000000fdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000&quot;)\n\u003C/code>\u003C/pre>\n\u003Cp>And, of course we insert the previous outpoint&#39;s scriptPubKey for signing, as well as append the \u003Ccode>SIGHASH_ALL\u003C/code> bytes.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-python\">sig_data = bytes.fromhex(&quot;02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab000000001976a914ac3cb4fc6ee6663e697c743aad0d89fd8eb4c15f88acfdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac0000000001000000&quot;)\n\u003C/code>\u003C/pre>\n\u003Cp>From here, like before, we take the double sha256 hash and sign it. We can use python&#39;s \u003Ca href=\"https://docs.python.org/3/library/hashlib.html\">hashlib\u003C/a> for taking sha256, and we&#39;ll use \u003Ccode>python-ecdsa\u003C/code> to sign.\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-python\">&gt;&gt;&gt; import hashlib\n&gt;&gt;&gt; import ecdsa\n&gt;&gt;&gt; sig_data = hashlib.sha256(hashlib.sha256(sig_data).digest()).digest()\n&gt;&gt;&gt; with open(&quot;secret.pem&quot;, &quot;rb&quot;) as pem_file:\n...     pem = pem_file.read()\n...\n&gt;&gt;&gt; sk = ecdsa.SigningKey.from_pem(pem)\n&gt;&gt;&gt; sig = sk.sign_digest(sig_data, sigencode=ecdsa.util.sigencode_der)\n&gt;&gt;&gt; sig.hex()\n&#39;3044022064ca8305562c788a7f7b17d68a2c0141f7b62914e7f2950fe043f01bfbbb99e902201179d318d6332b871827b8fb310b013f19401c6ea74adbde990e466c736285a7&#39;\n\u003C/code>\u003C/pre>\n\u003Cp>Again, we take this signature and the previous outpoint&#39;s pubkey to form the scriptSig\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-python\">&gt;&gt;&gt; SIGHASH_ALL = 0x01\n&gt;&gt;&gt; pubkey = bytes.fromhex(&quot;02726b45a5b1b506015dc926630b2627454d635d87eeb72bb7d5476d545d6769f9&quot;)\n&gt;&gt;&gt; p2pkh_script_sig = (len(sig) + 1).to_bytes(1, &quot;little&quot;) + sig + SIGHASH_ALL.to_bytes(1, &quot;little&quot;) + len(pubkey).to_bytes(1, &quot;little&quot;) + pubkey\n&gt;&gt;&gt; p2pkh_script_sig.hex()\n&#39;473044022064ca8305562c788a7f7b17d68a2c0141f7b62914e7f2950fe043f01bfbbb99e902201179d318d6332b871827b8fb310b013f19401c6ea74adbde990e466c736285a7012102726b45a5b1b506015dc926630b2627454d635d87eeb72bb7d5476d545d6769f9&#39;\n\u003C/code>\u003C/pre>\n\u003Cp>Now finally, we replace this scriptSig in the original transaction (including the OP_PUSHDATA of hex \u003Ccode>6a\u003C/code> for its length).\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab000000006a473044022064ca8305562c788a7f7b17d68a2c0141f7b62914e7f2950fe043f01bfbbb99e902201179d318d6332b871827b8fb310b013f19401c6ea74adbde990e466c736285a7012102726b45a5b1b506015dc926630b2627454d635d87eeb72bb7d5476d545d6769f9fdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000\n\u003C/code>\u003C/pre>\n\u003Cp>And test it with \u003Ccode>bitcoin-cli\u003C/code>&#39;s \u003Ccode>testmempoolaccept\u003C/code>\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">bitcoin-cli testmempoolaccept &#39;[&quot;02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab000000006a473044022064ca8305562c788a7f7b17d68a2c0141f7b62914e7f2950fe043f01bfbbb99e902201179d318d6332b871827b8fb310b013f19401c6ea74adbde990e466c736285a7012102726b45a5b1b506015dc926630b2627454d635d87eeb72bb7d5476d545d6769f9fdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000&quot;]&#39;\n\u003C/code>\u003C/pre>\n\u003Cp>Output:\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">[{&#39;txid&#39;: &#39;e110d9ab2c5af39b35724f1a9de28379f3c4dd0c0ceb96c44e87787351b567b4&#39;, &#39;wtxid&#39;: &#39;e110d9ab2c5af39b35724f1a9de28379f3c4dd0c0ceb96c44e87787351b567b4&#39;, &#39;allowed&#39;: True, &#39;vsize&#39;: 191, &#39;fees&#39;: {&#39;base&#39;: 1e-05}}]\n\u003C/code>\u003C/pre>\n\u003Cp>Nice. 🤓\u003C/p>\n\u003Ch3>Conclusion\u003C/h3>\n\u003Cp>And there we have it. Just by using some open source tooling we can create keys, generate Bitcoin addresses, create raw transactions, and sign them for spenditure. We got somewhat lucky with \u003Ccode>openssl\u003C/code> and \u003Ccode>python-ecdsa\u003C/code> by generating canonical signatures on the first try. If we hadn&#39;t, we could have simply re-tried until achieveing one.\u003C/p>\n\u003Ch4>Final thoughts on \u003Ccode>python-ecdsa\u003C/code> security\u003C/h4>\n\u003Cp>You may ask why I chose to show the use of \u003Ccode>python-ecdsa\u003C/code> if it is potentially \u003Ca href=\"https://github.com/tlsfuzzer/python-ecdsa#security\">less secure\u003C/a>. Honestly, I&#39;m not sure 😅. I sort of wanted to document how to do it with this Python library anyways 🤷‍♂️.  Also, candidly, I don&#39;t completely understand the security risks in \u003Ccode>python-ecdsa\u003C/code>&#39;s README. I think I understand what a \u003Ca href=\"https://en.wikipedia.org/wiki/Side-channel_attack\">side-channel attack\u003C/a> \u003Cem>is\u003C/em>, but how much of a concern is it really? Does \u003Ccode>openssl\u003C/code> provide security against these attacks? What about other common Bitcoin wallets and libraries? Furthermore, \u003Ccode>python-ecdsa\u003C/code>&#39;s README proclaims that any pure Python implementation would be vulnerable since &quot;Python does not provide side channel secure primitives&quot;. That seems like a bold accusation. Is it true? At the end of the day, I don&#39;t know, and I suppose I will have to the leave it to the cryptographic experts for now. If side-channel secure programming is indeed &quot;impossible&quot; in pure Python, I would hope there&#39;d be some effort to fix or improve that. Either way, I&#39;m hoping to stir some conversation from the community with this blog.\u003C/p>\n\u003Ch4>Actually sending the transaction on Bitcoin Testnet\u003C/h4>\n\u003Cp>Finally, I&#39;ll go ahead and actually send the transaction on Testnet (using the transaction signed via \u003Ccode>openssl\u003C/code> shown above)\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">bitcoin-cli sendrawtransaction &quot;02000000012797bc54ea5dc356104c9e4be0e57c7dfc4bde12ec26983b2d4f55e1e88ff1ab000000006b483045022100df741c554ee34ab636a213956abf85fd4d05143026eb7b5f07ba56ac8978687902207c7e70f5790c6146599dd7c035111b93f131d95591b6030c80b1010d2e047ed3012102726b45a5b1b506015dc926630b2627454d635d87eeb72bb7d5476d545d6769f9fdffffff01d0b30d00000000001976a914f5326ca3988fd949f3b7699922caf3eadc86e71488ac00000000&quot;\n\u003C/code>\u003C/pre>\n\u003Cp>Output:\u003C/p>\n\u003Cpre>\u003Ccode class=\"language-bash\">766a1be97eed0bc3f3c1e350f1c4cc2c0a634f676bedcc7cc116379f619abec6\n\u003C/code>\u003C/pre>\n\u003Cp>I hope y&#39;all enjoyed this blog. Stay tuned for more content! ✌️\u003C/p>\n",title:"How to sign a Bitcoin transaction",date:new Date(1674864000000),author:"jtraub91"},"uses":{"params":["slug"]}}],
+							form: null,
+							error: null
+						});
+					});
+				}
+			</script>
+		</div>
+	</body>
+</html>
