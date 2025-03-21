@@ -9,16 +9,9 @@
   .nav-link {
     transition: color 0.2s ease-in-out;
   }
-  #buymeacoffee {
-    height: 60px !important;
-    width: 217px !important;
-  }
   @media (max-width: 600px){
     a {
       font-size: 1.5rem;
-    }
-    #buymeacoffee {
-      transform: scale(.7);
     }
   }
 </style>

@@ -1,9 +1,10 @@
 import fs from 'fs';
+import path from 'path';
 import matter from 'gray-matter';
 import {marked} from 'marked';
 
 export async function load({ params }) {
-	const blogContentPath = "src/content/blog/";
+	const blogContentPath = "./src/content/blog/";
 	const blogFileContentRaw = fs.readFileSync(blogContentPath + `${params.slug}.md`);
 	const parsedBlog = matter(blogFileContentRaw);
 	
@@ -19,3 +20,5 @@ export async function load({ params }) {
 		author,
 	};
 }
+
+export const prerender = true;
