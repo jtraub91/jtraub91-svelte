@@ -16,7 +16,7 @@ const config = {
 		},
 		adapter: adapter(),
 		paths: {
-			base: '/jtraub91-svelte',
+			base: '',
 		},
 	},
 };
