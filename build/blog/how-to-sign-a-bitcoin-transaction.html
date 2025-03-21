@@ -7,22 +7,24 @@
 		
 		<link href="../_app/immutable/assets/0.DPidJByt.css" rel="stylesheet">
 		<link href="../_app/immutable/assets/4.cuQNAo3a.css" rel="stylesheet">
-		<link rel="modulepreload" href="../_app/immutable/entry/start.KJh6PgXi.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/entry.ErmU7m1_.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/runtime.CoMFCokD.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/index-client.uip5C0tD.js">
-		<link rel="modulepreload" href="../_app/immutable/entry/app.D4pyBmeP.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/render.BNdOsU5-.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/disclose-version.CdsaJyap.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/props.0LGAYUSe.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/store.BTxSyo9A.js">
-		<link rel="modulepreload" href="../_app/immutable/nodes/0.NBz-YxCm.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/legacy.CTsEH1qb.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/lifecycle.BFAvy8Wq.js">
-		<link rel="modulepreload" href="../_app/immutable/nodes/4.DZS_Dq8I.js">
+		<link rel="modulepreload" href="../_app/immutable/entry/start.1NInwRDI.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/entry.DNYI3SCP.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/runtime.DloJ9bwY.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/paths.DSOl4UXj.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/index-client.oE4o-9y1.js">
+		<link rel="modulepreload" href="../_app/immutable/entry/app.CrrBMB7J.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/render.U6tP9mdC.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/disclose-version.D5aYQnBI.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/props.Dd9MefIC.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/store.CwMe1Djl.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/0.DtMTS4An.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/legacy.CyhzUJuU.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/attributes.DvgAUZjV.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/lifecycle.BfUUx4s0.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/4.q1bs1AoR.js">
 	</head>
 	<body data-sveltekit-preload-data="hover">
-		<div style="display: contents"><!--[--><!--[--><!----><div class="flex flex-col min-w-[420px]"><header class="flex flex-row"><div class="top-0 left-0 h-20 w-20 min-h-20 min-w-20"><a href="/" id="yoshi-github-jtraub91" class="svelte-dpys7o"><img src="/images/yoshi-github-jtraub91.jpg" alt="yoshi-github-jtraub91"></a></div> <a href="/blog" class="nav-link mx-2 mt-auto mb-0 font-mono text-lg text-[dodgerblue] hover:text-[indigo]  svelte-dpys7o">blog</a> <a href="/links" class="nav-link mx-2 mt-auto mb-0 font-mono text-lg text-[dodgerblue] hover:text-[indigo]  svelte-dpys7o"><span class="mb-0 mt-auto mx-auto">links</span></a></header><!----> <div class="flex flex-col"><!----><div class="flex flex-col"><h1 class="text-center svelte-1azcsk6">How to sign a Bitcoin transaction</h1> <div class="text-center text-sm text-gray-500">January 5, 2023</div> <article class="svelte-1azcsk6"><!----><p><em>Edited: 02/23/2023</em></p>
+		<div style="display: contents"><!--[--><!--[--><!----><div class="flex flex-col min-w-[420px]"><header class="flex flex-row"><div class="top-0 left-0 h-20 w-20 min-h-20 min-w-20"><a href="../" id="yoshi-github-jtraub91" class="svelte-dpys7o"><img src="../images/yoshi-github-jtraub91.jpg" alt="yoshi-github-jtraub91"></a></div> <a href="../blog" class="nav-link mx-2 mt-auto mb-0 font-mono text-lg text-[dodgerblue] hover:text-[indigo]  svelte-dpys7o">blog</a> <a href="../links" class="nav-link mx-2 mt-auto mb-0 font-mono text-lg text-[dodgerblue] hover:text-[indigo]  svelte-dpys7o"><span class="mb-0 mt-auto mx-auto">links</span></a></header><!----> <div class="flex flex-col"><!----><div class="flex flex-col"><h1 class="text-center svelte-1azcsk6">How to sign a Bitcoin transaction</h1> <div class="text-center text-sm text-gray-500">January 5, 2023</div> <article class="svelte-1azcsk6"><!----><p><em>Edited: 02/23/2023</em></p>
 <h2>Introduction</h2>
 <p>In the last blog post, we saw how to <a href="https://jtraub91.github.io/generate-a-bitcoin-address-on-the-command-line.html">generate a bitcoin address on the command line</a>. This was a base58-encoded address which was used to receive bitcoin in a pay-to-pubkey-hash transaction.</p>
 <p>In this post, you&#39;ll see how to create a transaction to send bitcoins to another address and sign it. The examples below will take place on bitcoin testnet.</p>
@@ -262,15 +264,16 @@
 			
 			<script>
 				{
-					__sveltekit_1w70g9p = {
-						base: new URL("..", location).pathname.slice(0, -1)
+					__sveltekit_l4zfa6 = {
+						base: new URL("..", location).pathname.slice(0, -1),
+						assets: "/jtraub91-svelte"
 					};
 
 					const element = document.currentScript.parentElement;
 
 					Promise.all([
-						import("../_app/immutable/entry/start.KJh6PgXi.js"),
-						import("../_app/immutable/entry/app.D4pyBmeP.js")
+						import("../_app/immutable/entry/start.1NInwRDI.js"),
+						import("../_app/immutable/entry/app.CrrBMB7J.js")
 					]).then(([kit, app]) => {
 						kit.start(app, element, {
 							node_ids: [0, 4],

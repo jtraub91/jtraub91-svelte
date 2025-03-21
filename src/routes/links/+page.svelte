@@ -1,3 +1,6 @@
+<script>
+  import { base } from '$app/paths';
+</script>
 <style>
   ul {
     margin: 2rem;
@@ -28,7 +31,7 @@
       <a href="https://github.com/jtraub91" target="_blank">
         <div class="m-auto flex flex-row">
           <img class="h-4 w-4 my-auto mx-1"
-            src="/images/github-mark.svg" alt="github icon"/>
+            src="{base}/images/github-mark.svg" alt="github icon"/>
           <span class="my-auto mx-1">jtraub91</span>
         </div>
         
@@ -38,7 +41,7 @@
       <a href="https://x.com/jtraub91" target="_blank">
         <div class="m-auto flex flex-row">
           <img class="h-4 w-4 my-auto mx-1 fill-black"
-            src="/images/x-logo-black.png" alt="x icon"/>
+            src="{base}/images/x-logo-black.png" alt="x icon"/>
           <span class="my-auto mx-1">jtraub91</span>
         </div>
         
@@ -48,7 +51,7 @@
       <a href="https://www.instagram.com/jason.traub/" target="_blank">
         <div class="m-auto flex flex-row">
           <img class="h-4 w-4 my-auto mx-1"
-            src="/images/Instagram_Glyph_Gradient.svg" alt="instagram icon"/>
+            src="{base}/images/Instagram_Glyph_Gradient.svg" alt="instagram icon"/>
           <span class="my-auto mx-1">jason.traub</span>
         </div>
         
@@ -58,7 +61,7 @@
       <a href="https://www.linkedin.com/in/jtraub/" target="_blank">
         <div class="m-auto flex">
           <img class="h-4 w-auto my-auto mx-1"
-            src="/images/LI-In-Bug.png" alt="linkedin icon"/>
+            src="{base}/images/LI-In-Bug.png" alt="linkedin icon"/>
           <span class="my-auto mx-1">jtraub</span>
         </div>
       </a>
@@ -68,8 +71,7 @@
         <div class="m-auto flex flex-row">
           <i class="fa-regular fa-envelope h-4 my-auto mx-1"></i>
           <span class="my-auto mx-1">jtraub91@gmail.com</span>
-        </div>
-        
+        </div>  
       </a>
     </li>
   </ul>

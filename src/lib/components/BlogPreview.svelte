@@ -1,4 +1,5 @@
 <script>
+  import { base } from '$app/paths';
   let { title, date, content, author, slug } = $props();
   let d = new Date(date);
   let months = [
@@ -58,7 +59,7 @@
 </style>
 
 <div class="blog-preview">
-  <a href={`/blog/${slug}`}>
+  <a href={`${base}/blog/${slug}`}>
     <h2>
       {title}
     </h2>

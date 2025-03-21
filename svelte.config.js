@@ -14,7 +14,10 @@ const config = {
 			handleMissingId: 'ignore',
 			entries: ['*'],
 		},
-		adapter: adapter()
+		adapter: adapter(),
+		paths: {
+			base: '/jtraub91-svelte',
+		},
 	},
 };
 
